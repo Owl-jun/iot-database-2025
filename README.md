@@ -182,8 +182,100 @@ IoT 개발자 데이터베이스 저장소
 
 
 ## 3일차
-- SQL 기초
-    - DDL (데이터 정의어)
-    - DML 중 INSERT , UPDATE , DELETE
+- Visual Studio Code 에서 MySQL 연동
+    - Weijan Chen 개인개발자가 만든 MySQL 확장도 준수
+    - Weijan Chen 이 개발한 Database Client를 설치(추천)
+    - Database Client 는 많은 DB연결이 가능!
+        - 데이터베이스 아이콘 생성
+    - Oracle에서 개발한 MySQL Shell for VS Code를 사용 하지말것(너무 불편함)
+    - Database Client
+        1. 툴 바의 Database 아이콘 클릭
+        2. Create Connection 클릭
+        3. 정보 입력 > 연결 테스트
+        <img src='./img/create.png' width = 600>
+        4. Workbench 처럼 사용
+        <img src='./img/da02.png' width = 600>
 
+- SQL 기초
+    - 기본 데이터형
+        - 데이터베이스에는 엄청 많은 데이터형이 존재(데이터의 사이즈 저장용량을 절약하기 위해서)
+        - 주요 데이터형
+            - SmallInt(2)   : signed $2^{16}$
+            - `Int(4)`       : signed $2^{32}$
+            - BigInt(8)     : signed $2^{64}$
+            - Float(4)      : 부동소수점 표현(소수점아래 7자리까지 저장)
+            - Decimal(5~17) : Float보다 더 큰 수 저장시 사용
+            - CHAR(n)       : 고정길이 문자형, n : (1~255)
+                - 주의점! Char(10)에 'Hello' 글자를 입력하면 'Hello&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+            - VARCHAR(n)    : 가변길이 문자열, n : (1~65535)
+                - 주의점! VARCHAR(10)에 'Hello' 글자를 입력하면 'Hello'
+            - Longtext(최대4GB) - 뉴스나 영화스크립트 저장 시 사용
+            - LongBlob(최대4GB) - mp3 , mp4 , 음악 , 영화데이터 자체 저장 시 사용
+            - Date(3) - 2025-02-27(오늘날짜) 까지 저장하는 타입
+            - DateTime(8) - 2025-02-27 10:46:34(오늘날짜 시간) 까지 저장하는 타입
+            - JSON(8) - json 타입 데이터를 저장
+
+    - DDL : CREATE
+
+        ```sql
+        CREATE DATABASE DB명
+        CHARACTER SET utf8mb4
+        COLLATE utf8mb4_unicode_ci;
+
+        CREATE TABLE 테이블명
+        (
+            속성(컬럼)명 제약사항들[NOT NULL|UNIQUE|DEFAULT|CHECK|...]
+            PRIMARY KEY(컬럼)
+            FOREIGN KEY(컬럼) REFERENCES 테이블명(컬럼) ON DELETE [CASCADE|RESTRICE|SET..]
+        );
+
+        ALTER DATABASE DB명
+        [변경사항]
+        
+        ALTER TABLE 테이블명 [이미 존재하는 컬럼은 MODIFY , 삭제시 DROP , 추가 : ADD]
+        -- 예시
+        ALTER TABLE NewBook ADD isbn VARCHAR(13);
+        ALTER TABLE NewBook MODIFY isbn INTEGER;
+        ALTER TABLE NewBook DROP isbn;
+        ALTER TABLE NewBook MODIFY bookname VARCHAR(255) NOT NULL;
+
+        DROP [TABLE|DATABASE] 객체명;
+        ```
+
+        - 테이블 생성 후 확인
+            1. Database 메뉴 -> Reverse Engineer(Ctrl+R) : 데이터베이스를 ERD로 변경
+            2. 연결은 패스
+            3. Select Schema to RE 에서 특정 스키마를 선택
+            4. Execute 버튼 클릭
+            5. ERD 확인
+
+            <img src='./img/da03.png' width= 600>
+
+    - DDL : ALTER
+    - DML 중 INSERT , UPDATE , DELETE
 - SQL 고급
+    - 내장 함수
+        - 절대값 : ABS()
+        - 반올림 : ROUND(숫자, 자리수)
+        - 문자열치환 : REPLACE(테이블명,'타겟','바꿀문자열')
+        - 바이트수 : LENGTH()
+        - 문자수 : CHAR_LENGTH()
+        - 문자열자르기 : SUBSTR(컬럼명,시작,끝) **시작인덱스 1**
+        - 날짜형 관련
+            - STR_TO_DATE(string,format) : 문자열데이터를 date형으로 반환
+            - DATE_FORMAT(date,format) : 날짜형 데이터를 VARCHAR로 반환
+            - ADDDATE(date,INTERVAL dd DAY) : 해당 날짜에서 인터벌만큼 지난 날짜반환
+            - DATE(date) : date타입의 날짜부분만 반환 (년-월-일)
+            - DATEDIFF(date1,date2) : date1 - date2 의 날짜 차이 (day)
+            - SYSDATE() : DMBS 시스템상의 오늘 년월일시분초 반환
+            - 날짜형 지정자
+                - %Y(2025) %y(25) %M(January) %m(02) %d(날짜) %a(Sunday) %W(Sun) %w(sunday = 0)
+                - %H(00~23) %h(01~12) %i(min) %s(second)
+
+    - NULL
+        - NULL 자체는 '' 이런것과 달리 아예 존재하지가 않기 때문에 다르다.
+        - NULL + 숫자 = NULL
+        - NULL 값은 집계함수를 사용자의 의도와 다르게 사용되게한다.
+        - COUNT(), AVG() 등등에서 NULL 값은 집계되지 않아 꼬이는 일이 많다.
+        - 그래서 IS NOT NULL , IS NULL 등을 활용하여 핸들링을 해줘야 한다.
+        - IFNULL(컬럼, 값) : 컬럼의 값이 NULL이면, '값' 으로 대치한다.
