@@ -147,4 +147,118 @@ SELECT e.employee_id
  WHERE d.location_id IN (SELECT location_id 
 						   FROM locations l 
 						  WHERE city LIKE 'O%');
+                          
+                          
+-- 서브쿼리 계속
 
+/* 사원의 급여 정보 중 업무별(job) 최소 급여를 받는 사원의 이름, 성을 name으로 별칭, 업무, 급여, 입사일로 출력(21행) */
+
+SELECT * 
+  FROM employees e1
+ WHERE (e1.job_id, e1.salary) IN
+								(SELECT e2.job_id
+									  , MIN(e2.salary) as salary
+								   FROM employees e2
+								  GROUP BY e2.job_id);
+
+-- 집합 연산자 : 테이블 내용을 합쳐서 조회
+
+-- 조건부 논리 표현식 제어 : CASE
+
+SELECT employee_id , CONCAT(first_name, ' ', last_name) as 'Name', job_id, salary,
+  CASE job_id	
+	WHEN 'HR_REP' THEN 1.10 * salary
+	WHEN 'MK_REP' THEN 1.12 * salary
+	WHEN 'PR_REP' THEN 1.15 * salary
+	WHEN 'SA_REP' THEN 1.18 * salary
+	WHEN 'IT_PROG' THEN 1.20 * salary
+	ELSE salary
+  END  "New Salary"
+FROM employees;
+                
+
+SELECT month(hire_date), count(*)
+FROM employees
+GROUP BY month(hire_date);
+
+SELECT 
+        MONTH(hire_date) AS month_num,
+        COUNT(*) AS hire_count
+    FROM employees
+    GROUP BY MONTH(hire_date);
+
+
+
+
+-- 563Page 문제 3 step1
+WITH month_counts AS (
+    SELECT 
+        MONTH(hire_date) AS month_num,
+        COUNT(*) AS hire_count
+    FROM employees
+    GROUP BY MONTH(hire_date)
+    ORDER BY month_num
+)
+SELECT 
+    CASE WHEN month_num = 1 THEN hire_count ELSE 0 END AS '1월',
+    CASE WHEN month_num = 2 THEN hire_count ELSE 0 END AS '2월',
+    CASE WHEN month_num = 3 THEN hire_count ELSE 0 END AS '3월',
+    CASE WHEN month_num = 4 THEN hire_count ELSE 0 END AS '4월',
+    CASE WHEN month_num = 5 THEN hire_count ELSE 0 END AS '5월',
+    CASE WHEN month_num = 6 THEN hire_count ELSE 0 END AS '6월',
+    CASE WHEN month_num = 7 THEN hire_count ELSE 0 END AS '7월',
+    CASE WHEN month_num = 8 THEN hire_count ELSE 0 END AS '8월',
+    CASE WHEN month_num = 9 THEN hire_count ELSE 0 END AS '9월',
+    CASE WHEN month_num = 10 THEN hire_count ELSE 0 END AS '10월',
+    CASE WHEN month_num = 11 THEN hire_count ELSE 0 END AS '11월',
+    CASE WHEN month_num = 12 THEN hire_count ELSE 0 END AS '12월'
+FROM month_counts;
+
+
+-- 563Page 문제 3 step2
+SELECT 
+    SUM(CASE WHEN month(hire_date) = 1 THEN 1 ELSE 0 END) AS '1월',
+    SUM(CASE WHEN month(hire_date) = 2 THEN 1 ELSE 0 END) AS '2월',
+    SUM(CASE WHEN month(hire_date) = 3 THEN 1 ELSE 0 END) AS '3월',
+    SUM(CASE WHEN month(hire_date) = 4 THEN 1 ELSE 0 END) AS '4월',
+    SUM(CASE WHEN month(hire_date) = 5 THEN 1 ELSE 0 END) AS '5월',
+    SUM(CASE WHEN month(hire_date) = 6 THEN 1 ELSE 0 END) AS '6월',
+    SUM(CASE WHEN month(hire_date) = 7 THEN 1 ELSE 0 END) AS '7월',
+    SUM(CASE WHEN month(hire_date) = 8 THEN 1 ELSE 0 END) AS '8월',
+    SUM(CASE WHEN month(hire_date) = 9 THEN 1 ELSE 0 END) AS '9월',
+    SUM(CASE WHEN month(hire_date) = 10 THEN 1 ELSE 0 END) AS '10월',
+    SUM(CASE WHEN month(hire_date) = 11 THEN 1 ELSE 0 END) AS '11월',
+    SUM(CASE WHEN month(hire_date) = 12 THEN 1 ELSE 0 END) AS '12월'
+FROM employees;
+
+
+-- ROLLUP
+/* 샘플 */
+
+SELECT * from employees;
+
+SELECT CASE WHEN GROUPING(department_id) = 1 THEN '(All-DEPTS)' ELSE department_id END as 'Dept#'
+	 , CASE WHEN GROUPING(job_id) = 1 THEN '(All-JOBS)' ELSE job_id END as 'Jobs'
+     , COUNT(employee_id) as "COUNT EMPs"
+     , CONCAT('$',FORMAT(SUM(salary),0)) as 'Salary SUM'
+  FROM employees
+ GROUP BY department_id, job_id WITH ROLLUP;
+ 
+ 
+-- 분석함수 NTILE , RANK
+
+select department_id
+	 , sum(salary) as 'sum salary'
+     , ntile(6) over(order by sum(salary) desc) -- 범위 별로 등급 매기는 키워드
+  from employees
+ group by department_id;
+ 
+ 
+select employee_id 
+	 , last_name 
+     , salary
+     , department_id
+     , rank() over (partition by department_id order by salary desc) as 'Rank'
+     , Dense_Rank() over (partition by department_id order by salary desc) as 'Dense_Rank'
+     , Row_Number() over (partition by department_id order by salary desc) as 'Row_Number'
+from employees;
