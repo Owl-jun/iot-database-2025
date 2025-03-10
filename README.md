@@ -450,6 +450,10 @@ IoT 개발자 데이터베이스 저장소
 
     4. 데이터베이스 CRUD 함수 구현 및 검색기능 추가.
 
+https://github.com/user-attachments/assets/3ab03490-d743-4e60-98c4-59029e4ea7b4
+
+
+
 - 데이터베이스 연습
     - SQL, 모델링 연습
 - 코딩테스트 
